@@ -10,6 +10,7 @@ use Slim\App;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Faker\Factory;
 
 class PopulateDatabaseCommand extends Command
 {
@@ -40,8 +41,52 @@ class PopulateDatabaseCommand extends Command
         $db->getConnection()->statement("TRUNCATE `companies`");
         $db->getConnection()->statement("SET FOREIGN_KEY_CHECKS=1");
 
+        $faker = Factory::create('fr_FR');
+        $idEmployee = 1; 
+        $idOffice = 1;
 
-        $db->getConnection()->statement("INSERT INTO `companies` VALUES
+        for($i = 1; $i<=2; $i++) {
+            $company = new Company();
+            $company->id = $i;
+            $company->name  = $faker->company();
+            $company->phone = $faker->phoneNumber();
+            $company->email = $faker->companyEmail();  
+            $company->website = $faker->url();
+            $company->image = $faker->image() ;
+            $company->save();
+
+            for ($j = 1; $j<=4; $j++) {
+                $city = $faker->city();
+                $office = new Office( );
+                $office->id = $idOffice++;
+                $office->name  = 'Bureau de '.$city;
+                $office->address = $faker->streetAddress();
+                $office->city = $city;
+                $office->zip_code = $faker->postcode();
+                $office->country = $faker->country();
+                $office->email = $faker->email();
+                $office->phone = $faker->phoneNumber();
+               
+                $company->offices()->save($office);
+                $office->save();
+
+                for ($k = 1; $k<=10;$k++) {
+                    $employee = new Employee();
+                    $employee->id = $idEmployee++;
+                    $employee->first_name  = $faker->firstName();
+                    $employee->last_name   = $faker->lastName();
+                    $employee->email       = $faker->email();
+                    $employee->phone       = $faker->phoneNumber();
+                    $employee->job_title   = $faker->jobTitle();
+                    $office->employees()->save($employee);
+                    $employee->save();
+                }
+            }
+            $company->headOffice()->associate($company->offices()->first());
+            $company->save();
+        }
+
+        /*$db->getConnection()->statement("INSERT INTO `companies` VALUES
     (1,'Stack Exchange','0601010101','stack@exchange.com','https://stackexchange.com/','https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Verisure_information_technology_department_at_Ch%C3%A2tenay-Malabry_-_2019-01-10.jpg/1920px-Verisure_information_technology_department_at_Ch%C3%A2tenay-Malabry_-_2019-01-10.jpg', now(), now(), null),
     (2,'Google','0602020202','contact@google.com','https://www.google.com','https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Google_office_%284135991953%29.jpg/800px-Google_office_%284135991953%29.jpg?20190722090506',now(), now(), null)
         ");
@@ -66,7 +111,7 @@ class PopulateDatabaseCommand extends Command
 
         $db->getConnection()->statement("update companies set head_office_id = 1 where id = 1;");
         $db->getConnection()->statement("update companies set head_office_id = 3 where id = 2;");
-
+*/
         $output->writeln('Database created successfully!');
         return 0;
     }

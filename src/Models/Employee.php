@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Employee extends Model
 {
     protected $table = 'employees';
+    
 
     public function company(): BelongsTo
     {

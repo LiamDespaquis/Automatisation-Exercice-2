@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Company extends Model
 {
     protected $table = 'companies';
+    
 
 
     public function offices(): HasMany
